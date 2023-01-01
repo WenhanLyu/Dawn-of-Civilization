@@ -855,6 +855,10 @@ class Congress:
 			
 				# Palace of Nations
 				if player(iClaimant).isHasBuildingEffect(iPalaceOfNations): iFavorClaimant += 10
+
+				if player(iClaimant).isHasBuildingEffect(iPalaceOfNations) and player(iClaimant).isHuman():
+					iFavorClaimant += 20
+					iClaimValidity += 50
 			
 			# AI memory of human voting behavior
 			if player(iClaimant).isHuman() and iVoter in self.dVotingMemory: iFavorClaimant += 5 * self.dVotingMemory[iVoter]

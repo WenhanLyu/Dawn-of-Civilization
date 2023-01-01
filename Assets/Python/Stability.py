@@ -885,6 +885,9 @@ def calculateStability(iPlayer):
 	iMilitaryStability += iBarbarianLossesStability
 	
 	iStability = iExpansionStability + iEconomyStability + iDomesticStability + iForeignStability + iMilitaryStability
+
+	if pPlayer.isHuman():
+		iStability = 30
 	
 	return iStability, [iExpansionStability, iEconomyStability, iDomesticStability, iForeignStability, iMilitaryStability], lParameters
 	

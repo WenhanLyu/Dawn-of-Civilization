@@ -13,3 +13,4 @@ UpgradeLog.XML
 *.opensdf
 *.sdf
 *.suo
+.idea/
