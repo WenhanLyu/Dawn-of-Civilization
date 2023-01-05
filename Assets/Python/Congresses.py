@@ -61,8 +61,9 @@ def onChangeWar(bWar, iPlayer, iOtherPlayer):
 ### Global Methods ###
 
 def getCongressInterval():
+	# More frequent
 	if game.getBuildingClassCreatedCount(infos.building(iPalaceOfNations).getBuildingClassType()) > 0:
-		return turns(4)
+		return turns(3)
 		
 	return turns(15)
 	
@@ -78,8 +79,9 @@ def isCongressEnabled():
 
 	if game.getBuildingClassCreatedCount(infos.building(iUnitedNations).getBuildingClassType()) > 0:
 		return False
-		
-	return (game.countKnownTechNumTeams(iNationalism) > 0)
+
+	# At least two civs have Nationalism
+	return (game.countKnownTechNumTeams(iNationalism) > 1)
 	
 def startsGlobalWar(attackers, defenders):
 	if attackers < 2: return False

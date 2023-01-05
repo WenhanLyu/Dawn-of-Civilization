@@ -31,6 +31,21 @@ lIndependenceCivs = [
 	iCanada
 ]
 
+lEuropeanCivs = [
+	iByzantium,
+	iVikings,
+	iSpain,
+	iFrance,
+	iEngland,
+	iHolyRome,
+	iRussia,
+	iNetherlands,
+	iItaly,
+	iPoland,
+	iPortugal,
+	iGermany,
+]
+
 lDynamicReligionCivs = [
 	iByzantium,
 	iAmerica,
@@ -351,6 +366,9 @@ class Birth(object):
 	
 	def isIndependence(self):
 		return self.iCiv in lIndependenceCivs
+
+	def isEuropeanAfterRome(self):
+		return self.iCiv in lEuropeanCivs
 	
 	def startAutoplay(self):
 		iAutoplayTurns = self.iTurn - scenarioStartTurn()
@@ -631,6 +649,13 @@ class Birth(object):
 			elif player(iGreece).isAlive():
 				return False
 			elif player(iRome).isHuman() and stability(iRome) == iStabilitySolid:
+				return False
+
+		# If Rome is still alive, all European Civs on born will be treat as an independence civ
+		if self.isEuropeanAfterRome() and player(iRome).isAlive():
+			birthCities = plots.birth(self.iCiv).cities()
+			if players.major().where(lambda p: civ(p) != self.iCiv).where(
+					lambda p: birthCities.owner(p).any()).all_if_any(lambda p: stability(p) >= iStabilitySolid):
 				return False
 		
 		# Italy requires Rome to be dead
