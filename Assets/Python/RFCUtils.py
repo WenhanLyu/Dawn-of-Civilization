@@ -776,7 +776,7 @@ def canEverRespawn(iCiv, iGameTurn = None):
 	if iGameTurn is None:
 		iGameTurn = turn()
 		
-	return not any(turn(iEnd) > iGameTurn for _, iEnd in dResurrections[iCiv])
+	return any(turn(iEnd) > iGameTurn for _, iEnd in dResurrections[iCiv])
 	
 # used: Barbs
 def evacuate(iPlayer, tPlot):
@@ -1146,3 +1146,10 @@ def possibleSpawnsBetween(origin, target, iDistance):
 			.where(lambda p: not units.at(p).atwar(origin.getOwner()))
 			.where(lambda p: not cities.surrounding(p).notowner(origin.getOwner()))
 	)
+
+
+# used: Slots, Collapse
+def resetRevealedOwner(iPlayer):
+	for plot in plots.all():
+		if not plot.isRevealed(game.getActiveTeam(), False) and plot.getRevealedOwner(game.getActiveTeam(), False) == iPlayer:
+			plot.setRevealedOwner(game.getActiveTeam(), slot(iIndependent))

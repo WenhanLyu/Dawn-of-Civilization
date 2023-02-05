@@ -31,10 +31,6 @@ def availableSlot(iSlot):
 	if player(iSlot).isMinorCiv():
 		return False
 	
-	revealed_owners = set(plots.all().where(lambda plot: plot.isRevealed(game.getActiveTeam(), False)).get(lambda plot: plot.getRevealedOwner(game.getActiveTeam(), False)))
-	if iSlot in revealed_owners:
-		return False
-	
 	return True
 	
 def addPlayer(iPlayer, iCiv, iBirthTurn=-1, bAlive=False, bMinor=False):
@@ -48,6 +44,8 @@ def updateCivilization(iPlayer, iCiv, iBirthTurn=-1):
 	iCurrentCivilization = player(iPlayer).getCivilizationType()
 	if iCiv == iCurrentCivilization:
 		return
+	
+	resetRevealedOwner(iPlayer)
 	
 	addPlayer(iPlayer, iCiv, iBirthTurn=iBirthTurn, bAlive=True)
 	
@@ -77,19 +75,21 @@ def getImpact(iCiv):
 	return max(iImpactMarginal, iImpact)
 			
 def isOutdated(iCiv):
+	if year() < year(dFall[iCiv]):
+		return False
+
 	lResurrections = dResurrections[iCiv]
 	if not lResurrections:
 		return True
 	
-	if year() >= dFall[iCiv]:
-		iFirstResurrectionStart = lResurrections[0][0]
-		iLastResurrectionEnd = lResurrections[-1][1]
+	iFirstResurrectionStart = lResurrections[0][0]
+	iLastResurrectionEnd = lResurrections[-1][1]
 		
-		if iLastResurrectionEnd != 2020:
-			return True
+	if iLastResurrectionEnd < 2020:
+		return True
 		
-		if iFirstResurrectionStart > dFall[iCiv]:
-			return True
+	if iFirstResurrectionStart > dFall[iCiv]:
+		return True
 	
 	return False
 
