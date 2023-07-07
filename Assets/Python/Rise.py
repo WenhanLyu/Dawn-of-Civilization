@@ -434,7 +434,7 @@ class Birth(object):
 	def updateArea(self):
 		if self.iCiv in lExpandedFlipCivs:
 			owners = self.area.cities().owners().major()
-			ownerCities = cities.all().area(self.location).where(lambda city: city.getOwner() in owners).where(lambda city: not plot(city).isCore(city.getOwner()))
+			ownerCities = cities.all().area(self.location).where(lambda city: city.getOwner() in owners).where(lambda city: not plot(city).isPlayerCore(city.getOwner()))
 			closerCities = ownerCities.where(lambda city: real_distance(city, self.location) <= real_distance(city, capital(city)) and real_distance(city, self.location) <= 14)
 			
 			additionalPlots = closerCities.plots().expand(2).where(lambda p: p.getOwner() in owners and none(p.isPlayerCore(iPlayer) for iPlayer in players.major().alive().without(self.iPlayer)))
@@ -545,6 +545,10 @@ class Birth(object):
 	def createUnits(self):
 		createRoleUnits(self.iPlayer, self.location, getStartingUnits(self.iPlayer))
 		
+		# only create units if coming from autoplay, otherwise after the switch
+		if self.iPlayer == active():
+			createSpecificUnits(self.iPlayer, self.location)
+		
 		# select a settler if available
 		if self.isHuman():
 			settler = units.at(self.location).owner(self.iPlayer).where(lambda unit: unit.isFound()).last()
@@ -581,8 +585,8 @@ class Birth(object):
 			if unit.isAnimal():
 				unit.kill(False, -1)
 				continue
-		
-			if cities.owner(unit):
+			
+			if cities.owner(unit.getOwner()):
 				closest = cities.owner(unit.getOwner()).closest(unit)
 			elif unit.getDomainType() == DomainTypes.DOMAIN_SEA or unit.isCargo():
 				if edge.sea():
@@ -590,7 +594,7 @@ class Birth(object):
 				else:
 					closest = plots.all().sea().without(self.area).closest(unit)
 			else:
-				closest = edge.land().closest(unit)
+				closest = edge.land().area(unit).closest(unit)
 			
 			if closest:
 				move(unit, closest)
@@ -706,7 +710,7 @@ class Birth(object):
 		if plots.owner(active()).closest_distance(self.location) <= 10:
 			key = "TXT_KEY_MESSAGE_RISE_%s" % infos.civ(self.iCiv).getIdentifier()
 			text = text_if_exists(key, adjective(self.iPlayer), otherwise="TXT_KEY_MESSAGE_RISE_GENERIC")
-			message(active(), str(text), location=self.location, color=iRed, button=infos.civ(self.iCiv).getButton())
+			message(active(), text.encode("ascii", "xmlcharrefreplace"), location=self.location, color=iRed, button=infos.civ(self.iCiv).getButton())
 	
 	def activate(self):
 		if self.iPlayer is None:
@@ -724,7 +728,7 @@ class Birth(object):
 		self.player.setInitialBirthTurn(self.iTurn)
 		
 		if not self.isHuman():
-			self.player.setAlive(True)
+			self.player.setAlive(True, True)
 		
 		self.area = plots.birth(self.iPlayer) + plots.core(self.iPlayer)
 		self.area = self.area.unique()
@@ -942,6 +946,9 @@ class Birth(object):
 		for city in flippedCities:
 			city = completeCityFlip(city, self.iPlayer, city.getOwner(), 100, bFlipUnits=True)
 			city.rebuild()
+			
+			iMinPopulation = self.player.getCurrentEra() + 1
+			city.setPopulation(max(iMinPopulation, city.getPopulation()))
 			
 			if since(scenarioStartTurn()):
 				ensureDefenders(self.iPlayer, city, 2)

@@ -2557,7 +2557,6 @@ bool CvCity::canConstruct(BuildingTypes eBuilding, bool bContinue, bool bTestVis
 			if (getCityIndexPlot(iI)->getTerrainType() == TERRAIN_DESERT)
 			{
 				iNumDesertTiles++;
-				break;
 			}
 		}
 
@@ -4694,8 +4693,8 @@ void CvCity::processBuilding(BuildingTypes eBuilding, int iChange, bool bObsolet
 			changeRiverPlotYield(((YieldTypes)iI), (GC.getBuildingInfo(eBuilding).getRiverPlotYieldChange(iI) * iChange));
 			changeFlatRiverPlotYield((YieldTypes)iI, GC.getBuildingInfo(eBuilding).getFlatRiverPlotYieldChange(iI) * iChange);
 			changeBaseYieldRate(((YieldTypes)iI), ((GC.getBuildingInfo(eBuilding).getYieldChange(iI) + getBuildingYieldChange((BuildingClassTypes)GC.getBuildingInfo(eBuilding).getBuildingClassType(), (YieldTypes)iI)) * iChange));
-			changeYieldRateModifier((YieldTypes)iI, GC.getBuildingInfo(eBuilding).getYieldModifier(iI));
-			changePowerYieldRateModifier((YieldTypes)iI, GC.getBuildingInfo(eBuilding).getPowerYieldModifier(iI));
+			changeYieldRateModifier((YieldTypes)iI, GC.getBuildingInfo(eBuilding).getYieldModifier(iI) * iChange);
+			changePowerYieldRateModifier((YieldTypes)iI, GC.getBuildingInfo(eBuilding).getPowerYieldModifier(iI) * iChange);
 		}
 
 		for (iI = 0; iI < NUM_COMMERCE_TYPES; iI++)
@@ -10830,6 +10829,7 @@ int CvCity::getTotalCommerceRateModifier(CommerceTypes eIndex) const
 	if (eIndex == COMMERCE_CULTURE && GET_TEAM(getTeam()).getProjectCount(PROJECT_GOLDEN_RECORD) > 0)
 	{
 		iTotalModifier += getSpaceProductionModifier() / 2;
+		iTotalModifier += GET_PLAYER(getOwnerINLINE()).getSpaceProductionModifier() / 2;
 	}
 
 	return std::max(0, iTotalModifier); // Leoreth
@@ -11945,7 +11945,13 @@ int CvCity::getCultureTimes100(PlayerTypes ePlayer) const
 	FAssertMsg(ePlayer >= 0, "ePlayer expected to be non-negative");
 	FAssertMsg(ePlayer < MAX_PLAYERS, "ePlayer expected to be within maximum bounds");
 
-	return getCultureTimes100(GET_PLAYER(ePlayer).getCivilizationType());
+	CivilizationTypes eCivilization = GET_PLAYER(ePlayer).getCivilizationType();
+	if (eCivilization == NO_CIVILIZATION)
+	{
+		return 0;
+	}
+
+	return getCultureTimes100(eCivilization);
 }
 
 
@@ -19531,7 +19537,10 @@ void CvCity::sack(PlayerTypes eHighestCulturePlayer, int iCaptureGold)
 			CvBuildingInfo& kBuilding = GC.getBuildingInfo((BuildingTypes)iI);
 			if (kBuilding.getDefenseModifier() > 0 || kBuilding.getBombardDefenseModifier() > 0 || kBuilding.getUnignorableBombardDefenseModifier() > 0)
 			{
-				setHasRealBuilding((BuildingTypes)iI, false);
+				if (!::isWorldWonderClass((BuildingClassTypes)kBuilding.getBuildingClassType()))
+				{
+					setHasRealBuilding((BuildingTypes)iI, false);
+				}
 			}
 		}
 	}

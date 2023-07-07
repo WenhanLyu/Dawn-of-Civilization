@@ -248,6 +248,7 @@ dMasterTitles = {
 	iFrance : "TXT_KEY_ADJECTIVE_TITLE",
 	iEngland : "TXT_KEY_CIV_ENGLISH_VASSAL",
 	iRussia : "TXT_KEY_CIV_RUSSIAN_VASSAL",
+	iPoland : "TXT_KEY_CIV_POLISH_VASSAL",
 	iNetherlands : "TXT_KEY_ADJECTIVE_TITLE",
 	iPortugal : "TXT_KEY_ADJECTIVE_TITLE",
 	iMongols : "TXT_KEY_CIV_MONGOL_VASSAL",
@@ -440,6 +441,7 @@ dEmpireThreshold = {
 	iPoland : 3,
 	iInca : 3,
 	iMongols : 8,
+	iMughals : 6,
 	iItaly : 4,
 	iIran : 4,
 	iGermany : 4,
@@ -1055,6 +1057,9 @@ def specificName(iPlayer):
 			
 		if isCurrentCapital(iPlayer, "Barcelona", "Valencia"):
 			return "TXT_KEY_CIV_SPAIN_ARAGON"
+		
+		if isCurrentCapital(iPlayer, "Oviedo"):
+			return "TXT_KEY_CIV_SPAIN_ASTURIAS"
 			
 		if not bSpain:
 			return "TXT_KEY_CIV_SPAIN_CASTILE"
@@ -1378,6 +1383,9 @@ def specificAdjective(iPlayer):
 			
 		if isCurrentCapital(iPlayer, "Barcelona", "Valencia"):
 			return "TXT_KEY_CIV_SPAIN_ARAGONESE"
+		
+		if isCurrentCapital(iPlayer, "Oviedo"):
+			return "TXT_KEY_CIV_SPAIN_ASTURIAN"
 			
 		if not bSpain:
 			return "TXT_KEY_CIV_SPAIN_CASTILIAN"
@@ -1440,6 +1448,10 @@ def specificAdjective(iPlayer):
 				
 		if bMonarchy:
 			return "TXT_KEY_CIV_MONGOLIA_MONGOL"
+	
+	elif iCiv == iMughals:
+		if not tPlayer.isHasTech(iFirearms):
+			return "TXT_KEY_CIV_MUGHALS_GHORID"
 				
 	elif iCiv == iOttomans:
 		return "TXT_KEY_CIV_OTTOMANS_OTTOMAN"
@@ -1500,6 +1512,9 @@ def vassalTitle(iPlayer, iMaster):
 	if iMasterCiv == iEngland and iCiv == iMughals:
 		if not player(iIndia).isAlive():
 			return dSpecificVassalTitles[iEngland][iIndia]
+	
+	if iMasterCiv == iEgypt and player(iMasterCiv).getStateReligion() == iIslam:
+		return dMasterTitles[iArabia]
 
 	sSpecificTitle = dSpecificVassalTitles[iMasterCiv].get(iCiv)
 	if sSpecificTitle: return sSpecificTitle

@@ -1790,7 +1790,7 @@ void CvPlayer::acquireCity(CvCity* pOldCity, bool bConquest, bool bTrade, bool b
 		pNewCity->setEverOwned(((PlayerTypes)iI), abEverOwned[iI]);
 	}
 
-	// Leoreth: log game turn of losing this city for previous owner
+	// Leoreth: track game turn of losing this city for previous owner
 	pNewCity->setGameTurnPlayerLost(eOldOwner, GC.getGameINLINE().getGameTurn());
 
 	int iTotalBuildingDamage = 0;
@@ -5124,7 +5124,7 @@ bool CvPlayer::canRaze(CvCity* pCity) const
 			return false;
 		}
 
-		if (pCity->calculateTeamCulturePercent(getTeam()) >= GC.getDefineINT("RAZING_CULTURAL_PERCENT_THRESHOLD"))
+		if (pCity->getCulture(getID()) > 0 && pCity->calculateTeamCulturePercent(getTeam()) >= GC.getDefineINT("RAZING_CULTURAL_PERCENT_THRESHOLD"))
 		{
 			return false;
 		}
@@ -9910,6 +9910,16 @@ int CvPlayer::getSpaceProductionModifier() const
 void CvPlayer::changeSpaceProductionModifier(int iChange)
 {
 	m_iSpaceProductionModifier = (m_iSpaceProductionModifier + iChange);
+
+	if (iChange != 0 && GET_TEAM(getTeam()).getProjectCount(PROJECT_GOLDEN_RECORD) > 0)
+	{
+		int iLoop;
+		CvCity* pLoopCity;
+		for (pLoopCity = firstCity(&iLoop); pLoopCity != NULL; pLoopCity = nextCity(&iLoop))
+		{
+			pLoopCity->updateCommerce(COMMERCE_CULTURE);
+		}
+	}
 }
 
 
@@ -24730,13 +24740,16 @@ int CvPlayer::countRequiredSlaves() const
 				{
 					pLoopPlot = plotCity(pLoopCity->getX_INLINE(), pLoopCity->getY_INLINE(), iJ);
 
-					if (pLoopPlot->getBonusType() == eBonus && pLoopPlot->getImprovementType() != eSlavePlantation)
+					if (pLoopPlot != NULL)
 					{
-						if (pLoopPlot->canUseSlave(getID()))
+						if (pLoopPlot->getBonusType() == eBonus && pLoopPlot->getImprovementType() != eSlavePlantation)
 						{
-							if (!pLoopPlot->isOwned() || pLoopPlot->getOwnerINLINE() == getID())
+							if (pLoopPlot->canUseSlave(getID()))
 							{
-								iNumRequiredSlaves++;
+								if (!pLoopPlot->isOwned() || pLoopPlot->getOwnerINLINE() == getID())
+								{
+									iNumRequiredSlaves++;
+								}
 							}
 						}
 					}
@@ -25392,6 +25405,11 @@ void CvPlayer::checkCapitalCity()
 
 void CvPlayer::restoreGeneralThreshold()
 {
+	if (getGreatGeneralsCreated() == 0)
+	{
+		return;
+	}
+
 	changeGreatGeneralsThresholdModifier(-GC.getDefineINT("GREAT_GENERALS_THRESHOLD_INCREASE") * ((getGreatGeneralsCreated() / 10) + 1));
 
 	for (int iI = 0; iI < MAX_PLAYERS; iI++)

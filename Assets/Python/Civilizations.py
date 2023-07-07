@@ -443,7 +443,7 @@ lCivilizations = [
 		iThailand,
 		iGold=800,
 		iStateReligion=iBuddhism,
-		lCivics=[iMonarchy, iVassalage, iCasteSystem, iRegulatedTrade, iMonasticism],
+		lCivics=[iMonarchy, iVassalage, iCasteSystem, iRegulatedTrade, iMonasticism, iTributaries],
 		techs=techs.column(8).without(iCompass, iDoctrine, iCommune, iPatronage)
 	),
 	Civilization(
@@ -1164,6 +1164,7 @@ dStartingExperience = CivDict({
 dAlwaysTrain = CivDict({
 	iGreece: [iHoplite, iCatapult],
 	iPhoenicia: [iNumidianCavalry],
+	iTamils: [iWarElephant],
 	iByzantium: [iLegion],
 	iArabia: [iMobileGuard, iGhazi],
 	iAztecs: [iJaguar],
